@@ -1,3 +1,5 @@
-/node-modules
 .idea/
 .git/
+node_modules
+dist
+.cache
