@@ -1,37 +1,41 @@
 import Stage from '@modules/stage'
+import GameObject from '@modules/object'
 import { getAnchorCoordinates } from '@modules/anchor'
+import { getMousePosition, getCoordinatesString } from '@modules/mouse'
+import { isEqual } from '@modules/utils'
 
 class MainStage extends Stage {
-    onAssetsReady(app, { Background, ShipCobra, anchorPoint }) {
+    onAssetsReady(app, { Background }) {
+        this.scene.interactive = true
 
-        let background = new PIXI.Container()
         let backgroundTexture = new PIXI.Sprite(Background)
-        let playerShip = new PIXI.Sprite(ShipCobra)
-        let anchorPt = new PIXI.Sprite(anchorPoint)
 
-        playerShip.anchor.set(0.5, 0.5)
+        this.playerShip = new GameObject({
+            textureName: 'ShipCobra',
+            anchor: [0.5, 0.5],
+            position: [400, 520]
+        })
 
+        this.playerShip.drawAnchorPoint()
 
-        playerShip.x = 60
-        playerShip.y = 210
+        this.mp = null;
 
-        anchorPt.x = playerShip.x
-        anchorPt.y = playerShip.y
+        this.scene.addChild(backgroundTexture)
+        this.scene.addChild(this.playerShip.unit)
 
-        // 
-
-
-        // getAnchorCoordinates(playerShip)
-
-
-
-        background.addChild(backgroundTexture)
-        background.addChild(playerShip)
-        background.addChild(anchorPt)
-
-        app.stage.addChild(background)
+        app.stage.addChild(this.scene)
 
         app.start()
+    }
+
+    tick() {
+
+        let mousePosition = getMousePosition()
+
+        if (!isEqual(mousePosition, this.mp)) {
+            console.log(this.mp, mousePosition)
+            this.mp = mousePosition;
+        }
     }
 }
 

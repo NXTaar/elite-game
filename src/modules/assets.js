@@ -6,18 +6,19 @@ const mapAssets = resolve => (loader, resources) => {
     let prerenderedAssets = {
         anchorPoint: anchorPointTexture
     }
-    let assets = Object.keys(resources).reduce((res, resourceName) => ({
+    let loadedAssets = Object.keys(resources).reduce((res, resourceName) => ({
         ...res,
         ...imagesByFilename[resourceName] && {
             [imagesByFilename[resourceName]]: PIXI.loader.resources[resourceName].texture
         }
     }), prerenderedAssets)
 
-    resolve(assets)
+    exports.assetsSync = loadedAssets
+    resolve(loadedAssets)
 }
 
 const loadAssets = () => new Promise(res => {
     PIXI.loader.add(imageFiles).load(mapAssets(res))
 })
 
-export default loadAssets()
+export const awaitAssets = loadAssets()
