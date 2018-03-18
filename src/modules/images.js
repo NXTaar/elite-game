@@ -5,8 +5,6 @@ let images = imagesFolder.keys().reduce((res, path) => {
         .toLowerCase()
         .replace(/(\b|-)\w/g, m => m.toUpperCase().replace(/-/, ''))
 
-    // exports[imageName] = imagesFolder(path)
-
     return {
         ...res,
         [imageName]: imagesFolder(path)

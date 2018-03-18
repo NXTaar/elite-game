@@ -1,7 +1,5 @@
 import Stage from '@modules/stage'
 import GameObject from '@modules/object'
-import { getAnchorCoordinates } from '@modules/anchor'
-import { getMousePosition, getCoordinatesString } from '@modules/mouse'
 import { isEqual } from '@modules/utils'
 
 class MainStage extends Stage {
@@ -17,8 +15,7 @@ class MainStage extends Stage {
         })
 
         this.playerShip.drawAnchorPoint()
-
-        this.mp = null;
+        this.playerShip.startMovement('followMouseX', backgroundTexture)
 
         this.scene.addChild(backgroundTexture)
         this.scene.addChild(this.playerShip.unit)
@@ -30,12 +27,6 @@ class MainStage extends Stage {
 
     tick() {
 
-        let mousePosition = getMousePosition()
-
-        if (!isEqual(mousePosition, this.mp)) {
-            console.log(this.mp, mousePosition)
-            this.mp = mousePosition;
-        }
     }
 }
 

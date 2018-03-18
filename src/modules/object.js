@@ -2,11 +2,12 @@ import * as PIXI from 'pixi.js'
 import app from './app'
 import pp from './private-props'
 import { assetsSync } from './assets'
-import { isEqual } from './utils'
+import * as movementFunctions from './movements'
 
 let privateProperty = pp([
     'anchorPoint',
     'anchorPointTexture',
+    'tick'
 ])
 
 class GameObject {
@@ -15,6 +16,7 @@ class GameObject {
         textureName,
         anchor,
         position,
+        movements = [],
         position: [pX = 0, pY = 0] = [],
         anchor: [aX = 0, aY = 0] = []
     }) {
@@ -22,6 +24,8 @@ class GameObject {
         let isValidTexture = texture && texture.constructor.name === 'Texture'
         let isValidTextureName = textureName && textures[textureName]
         let self = this
+
+        this.movements = []
 
         isValidTexture && (this.unit = new PIXI.Sprite(texture))
 
@@ -39,6 +43,23 @@ class GameObject {
         this[privateProperty.anchorPointTexture] = textures.anchorPoint
 
         typeof this.objectReady === 'function' && this.objectReady(app)
+
+        app.ticker.add(this[privateProperty.tick].bind(this))
+    }
+
+    startMovement(name, params = {}) {
+        movementFunctions[name] && this.movements.push({
+            name,
+            move: movementFunctions[name],
+            params
+        })
+    }
+
+    stopMovement(name) {
+        this.movements.reduce((res, movementSetup) => [
+            ...res,
+            ...movementSetup.name !== name ? [movementSetup] : []
+        ], [])
     }
 
     async drawAnchorPoint() {
@@ -55,6 +76,12 @@ class GameObject {
         this.unit.removeChild(this[privateProperty.anchorPoint])
 
         this[privateProperty.anchorPoint] = null
+    }
+
+    [privateProperty.tick]() {
+        this.movements.forEach(({ move, params }) => move(this.unit, params))
+
+        typeof this.tick === 'function' && this.tick()
     }
 }
 
