@@ -1,6 +1,7 @@
-import * as PIXI from 'pixi.js'
 import { imageFiles, imagesByFilename } from '@modules/images'
 import { anchorPointTexture } from '@modules/anchor'
+import assetsSettingsJSON from '../assets/json/assets.json'
+
 
 const mapAssets = resolve => (loader, resources) => {
     let prerenderedAssets = {
@@ -22,3 +23,5 @@ const loadAssets = () => new Promise(res => {
 })
 
 export const awaitAssets = loadAssets()
+
+export const assetsConfig = assetsSettingsJSON

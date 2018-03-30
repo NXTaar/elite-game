@@ -1,5 +1,6 @@
 import 'normalize.css'
 import './styles.css'
+import InitialStage from '../stages/main'
 
-import intialStage from './stages/main'
-new intialStage()
+new InitialStage()
+

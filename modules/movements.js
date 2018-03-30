@@ -1,6 +1,6 @@
 import { getMousePosition } from '@modules/mouse'
 
-let speed = 5
+let speed = 9
 let speedLimit = 1000
 let boundGap = 20
 
