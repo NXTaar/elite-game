@@ -1,4 +1,5 @@
 import { getMousePosition } from '@modules/mouse'
+import Vector from '@modules/vector'
 
 let speed = 9
 let speedLimit = 1000
@@ -26,4 +27,20 @@ export const followMouseX = (object, { width }) => {
         object.x += (leftBorder - pX) * speed / speedLimit
         object.x < leftBorder && (object.x = leftBorder)
     }
+}
+
+export const linearMove = (object, {
+    destination: [dX, dY],
+    speed = 1,
+    end,
+    delta
+} = {}) => {
+    let { x: oX, y: oY } = object
+    let { x: vX, y: vY } = Vector.normalize({ x: dX - oX, y: dY - oY })
+    let nextX = oX + vX * speed
+    let nextY = oY + vY * speed
+
+    object.position.set(nextX, nextY)
+
+    vX === 0 && vY === 0 && end()
 }

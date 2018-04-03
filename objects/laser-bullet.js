@@ -1,10 +1,7 @@
-
-
-
 import GameObject from '@modules/object'
 import { getCanvasSize } from '@modules/resize'
 
-const LASER_SPEED = 14;
+const LASER_SPEED = 14
 
 class LaserBullet extends GameObject {
     constructor({
@@ -35,7 +32,7 @@ class LaserBullet extends GameObject {
 
         let yCheck = this.unit.y + this.unit.height * -0.5 * this.direction
 
-        this.inSight = (yCheck >= 0) && (yCheck <= sceneHeight)
+        this.inSight = yCheck >= 0 && yCheck <= sceneHeight
     }
 
     stop() {
@@ -46,7 +43,6 @@ class LaserBullet extends GameObject {
         if (this.speed === 0) return
         this.position(null, this.unit.y + this.speed * this.direction)
     }
-
 }
 
 export default LaserBullet

@@ -146,6 +146,7 @@
         "no-useless-computed-key": "error",
         "no-useless-constructor": "error",
         "no-useless-rename": "error",
+        "no-debugger":"off",
         "no-var": "error",
         "object-shorthand": "error",
         "prefer-numeric-literals": "error",

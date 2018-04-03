@@ -1,6 +1,6 @@
 import Stage from '@modules/stage'
 // import GameObject from '@modules/object'
-import { PlayerShip, LaserBullet } from '../objects'
+import { PlayerShip, LaserBullet, Enemy } from '../objects'
 // import { isEqual } from '@modules/utils'
 
 class MainStage extends Stage {
@@ -19,6 +19,10 @@ class MainStage extends Stage {
             position: [400, 520]
         })
 
+        this.enemyShip = new Enemy({
+            position: [400, 50]
+        })
+
         this.playerShip.drawAnchorPoint()
         this.playerShip.startMovement('followMouseX', backgroundTexture)
 
@@ -26,6 +30,7 @@ class MainStage extends Stage {
 
         this.scene.addChild(backgroundTexture)
         this.scene.addChild(this.playerShip.unit)
+        this.scene.addChild(this.enemyShip.unit)
 
         app.stage.addChild(this.scene)
 

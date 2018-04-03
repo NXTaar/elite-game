@@ -6,7 +6,8 @@ import * as movementFunctions from './movements'
 let privateProperty = pp([
     'anchorPoint',
     'anchorPointTexture',
-    'tick'
+    'tick',
+    'endMove'
 ])
 
 class GameObject {
@@ -62,19 +63,17 @@ class GameObject {
         return !!this.unit.parent
     }
 
-    startMovement(name, params = {}) {
+    startMovement = (name, params = {}) => new Promise(res => {
         movementFunctions[name] && this.movements.push({
             name,
             move: movementFunctions[name],
-            params
+            params,
+            res
         })
-    }
+    })
 
     stopMovement(name) {
-        this.movements.reduce((res, movementSetup) => [
-            ...res,
-            ...movementSetup.name === name ? [] : [movementSetup]
-        ], [])
+        this.movements = this.movements.filter(move => name !== move.name)
     }
 
     drawAnchorPoint() {
@@ -93,10 +92,20 @@ class GameObject {
         this[privateProperty.anchorPoint] = null
     }
 
-    [privateProperty.tick]() {
-        this.movements.forEach(({ move, params }) => move(this.unit, params))
+    [privateProperty.endMove] = (name, res) => () => {
+        this.stopMovement(name)
+        res()
+    }
 
-        typeof this.tick === 'function' && this.tick()
+
+    [privateProperty.tick](delta) {
+        this.movements.forEach(({ move, params, name, res }) => move(this.unit, {
+            ...params,
+            delta,
+            end: this[privateProperty.endMove](name, res)
+        }))
+
+        typeof this.tick === 'function' && this.tick(delta)
     }
 }
 
