@@ -50,7 +50,7 @@ class GameObject {
 
         typeof this.objectReady === 'function' && this.objectReady(app)
 
-        app.ticker.add(this[privateProperty.tick].bind(this))
+        app.ticker.add(this[privateProperty.tick])
     }
 
     position(x, y = this.unit.y) {
@@ -98,7 +98,7 @@ class GameObject {
     }
 
 
-    [privateProperty.tick](delta) {
+    [privateProperty.tick] = delta => {
         this.movements.forEach(({ move, params, name, res }) => move(this.unit, {
             ...params,
             delta,

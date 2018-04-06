@@ -1,7 +1,5 @@
 import Stage from '@modules/stage'
-// import GameObject from '@modules/object'
 import { PlayerShip, LaserBullet, Enemy } from '../objects'
-// import { isEqual } from '@modules/utils'
 
 class MainStage extends Stage {
     constructor(props) {
@@ -20,7 +18,8 @@ class MainStage extends Stage {
         })
 
         this.enemyShip = new Enemy({
-            position: [400, 50]
+            position: [400, 50],
+            borders: backgroundTexture
         })
 
         this.playerShip.drawAnchorPoint()
