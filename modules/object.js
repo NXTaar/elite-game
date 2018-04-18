@@ -1,6 +1,7 @@
 import app from './app'
 import pp from './private-props'
 import { assetsSync, assetsConfig } from './assets'
+import { prepareCollisions } from './collision'
 import * as movementFunctions from './movements'
 
 let privateProperty = pp([
@@ -42,6 +43,8 @@ class GameObject {
 
         anchor && this.unit.anchor.set(aX, aY)
         position && this.position(pX, pY)
+
+        Object.assign(this, prepareCollisions(assetsConfig[textureName], this.unit))
 
         this[privateProperty.anchorPoint] = null
         this[privateProperty.anchorPointTexture] = textures.anchorPoint

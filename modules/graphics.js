@@ -9,3 +9,15 @@ export const drawPoint = color => {
 
     return point
 }
+
+export const drawPolygon = ({ points, color, size = 1 }) => {
+    let polygon = new PIXI.Graphics()
+
+    polygon.lineStyle(size, parseInt(`0x${color}`, 16))
+    let start = points.shift()
+
+    polygon.moveTo(start.x, start.y)
+    points.forEach(({ x, y }) => polygon.lineTo(x, y))
+
+    return polygon
+}

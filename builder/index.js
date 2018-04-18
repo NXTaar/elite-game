@@ -7,14 +7,14 @@ const jsonPath = path.resolve('./assets/json')
 const tiledJson = path.resolve(jsonPath, 'tiled-raw.json')
 
 
-function processTiledJSON({ tiles: objectsRaw }) {
-    return Object.keys(objectsRaw).reduce((res, key) => {
+function processTiledJSON({ tiles: objectsRaw, tileproperties: objectProperties }) {
+    return Object.keys(objectsRaw).reduce((res, key, index) => {
         let setup = objectsRaw[key]
         let { type } = setup
 
         typeof parseTypes[type] === 'function' && (res = {
             ...res,
-            ...parseTypes[type](setup)
+            ...parseTypes[type](setup, objectProperties[index])
         })
 
         return res

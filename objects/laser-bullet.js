@@ -7,12 +7,15 @@ class LaserBullet extends GameObject {
     constructor({
         position,
         textureName = 'LaserBullet',
-        anchor = [0.5, 0.5]
+        anchor = [0.5, 0.5],
+        checkHit
     } = {}) {
         super({ position, textureName, anchor })
         this.speed = 0
         this.inSight = true
         this.direction = -1
+        this.checkHit = checkHit
+        this.random = Math.random()
     }
 
     changeDirection() {
@@ -41,6 +44,7 @@ class LaserBullet extends GameObject {
 
     tick() {
         if (this.speed === 0) return
+        typeof this.checkHit === 'function' && this.checkHit(this)
         this.position(null, this.unit.y + this.speed * this.direction)
     }
 }

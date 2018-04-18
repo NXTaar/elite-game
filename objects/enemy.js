@@ -9,6 +9,8 @@ class Enemy extends GameObject {
         position,
         textureName = 'ShipSidewinder',
         borders,
+        attackFn = () => {},
+        attackCondition = () => false,
         anchor = [0.5, 0.5]
     }) {
         super({ position, textureName, anchor })
@@ -29,6 +31,11 @@ class Enemy extends GameObject {
             {
                 name: 'movingToRightBorder',
                 action: this.moveToBorder('right')
+            },
+            {
+                name: 'attackingPlayer',
+                action: attackFn,
+                enterCondition: attackCondition
             }
         ])
 
@@ -51,6 +58,7 @@ class Enemy extends GameObject {
         enter(Math.random() >= 0.5 ? 'movingToLeftBorder' : 'movingToRightBorder')
     }
 
+    // вынести отдельно чтобы можно было собирать поведение из "кусочков"
     moveToBorder = direction => async ({ out, enter }) => {
         let { x, nextState } = this.borderSetups[direction]
         let { y } = this.unit
@@ -62,7 +70,7 @@ class Enemy extends GameObject {
     }
 
     tick() {
-        this.sm.sync()
+        this.sm.render()
     }
 }
 

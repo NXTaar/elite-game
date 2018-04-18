@@ -36,12 +36,29 @@ class MainStage extends Stage {
         app.start()
     }
 
+    checkEnemyHit = ({ random, collisionBodies, unit: { x: bulletX, y: bulletY } }) => {
+        let bullet = collisionBodies[0]
+        let enemy = this.enemyShip.collisionBodies[0]
+        let { x: enemyX, y: enemyY } = this.enemyShip.unit
+
+        bullet.updatePosition(bulletX, bulletY)
+        enemy.updatePosition(enemyX, enemyY)
+
+        let isHit = bullet.collision(enemy)
+
+        isHit && console.log('Hit!!', random)
+    }
+
+    isPlayerOnFireLine = () => {
+
+    }
+
     handlePlayerShooting = () => this.playerShip.firePoints.forEach(this.fireLaser)
 
     fireLaser = ({ x: firePointX, y: firePointY }) => {
         let { x, y } = this.playerShip.unit
 
-        let shot = this.shotsRecycle.length > 0 ? this.shotsRecycle.shift() : new LaserBullet()
+        let shot = this.shotsRecycle.length > 0 ? this.shotsRecycle.shift() : new LaserBullet({ checkHit: this.checkEnemyHit })
 
         shot.position(x + firePointX, y + firePointY)
 
