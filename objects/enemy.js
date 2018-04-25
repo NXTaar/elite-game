@@ -18,6 +18,13 @@ class Enemy extends GameObject {
         this.unit.position.y = this.unit.height * -1
         this.unit.rotation = Math.PI
 
+        let [aX, aY] = this.anchorXY
+
+        this.firePoints = this.config.firepoint.map(({ x, y }) => ({
+            x: x - aX,
+            y: y - aY
+        }))
+
         this.sm = new StateMachine([
             {
                 name: 'appearingOnTop',

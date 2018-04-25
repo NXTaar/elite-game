@@ -1,6 +1,5 @@
 import GameObject from '@modules/object'
 
-
 class PlayerShip extends GameObject {
     constructor({
         position,

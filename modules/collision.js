@@ -1,8 +1,9 @@
 import { Vector, Polygon, testPolygonPolygon } from 'sat'
 
 class CollisionBody extends Polygon {
-    constructor(points, { x, y }) {
+    constructor(points, { x, y, ...props }) {
         super(new Vector(x, y), points)
+        Object.assign(this, props)
     }
 
     updatePosition(x, y) {
@@ -16,22 +17,7 @@ class CollisionBody extends Polygon {
     }
 }
 
-
-export default CollisionBody
-
-export const prepareCollisions = ({ hitbox, anchor }, { width, height, x, y }) => {
-    let collisionBodies = hitbox ?
-        hitbox.map(({ area }) => {
-            let preparedArea = prepareHitbox({ area, width, height, anchor })
-
-            return new CollisionBody(preparedArea, { x, y })
-        }) :
-        []
-
-    return { collisionBodies }
-}
-
-export const prepareHitbox = ({
+const prepareHitbox = ({
     area,
     width,
     height,
@@ -40,4 +26,16 @@ export const prepareHitbox = ({
     let [zeroX, zeroY] = [width * anchor[0], height * anchor[1]]
 
     return area.map(({ x, y }) => new Vector(x - zeroX, y - zeroY))
+}
+
+export const prepareCollisions = ({ hitbox, anchor }, { width, height, x, y }) => {
+    let collisionBodies = hitbox ?
+        hitbox.map(({ area, ...props }) => {
+            let preparedArea = prepareHitbox({ area, width, height, anchor })
+
+            return new CollisionBody(preparedArea, { x, y, ...props })
+        }) :
+        []
+
+    return { collisionBodies }
 }

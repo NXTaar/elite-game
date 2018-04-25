@@ -8,22 +8,31 @@ class LaserBullet extends GameObject {
         position,
         textureName = 'LaserBullet',
         anchor = [0.5, 0.5],
-        checkHit
+        checkHit,
+        direction = -1
     } = {}) {
         super({ position, textureName, anchor })
         this.speed = 0
         this.inSight = true
-        this.direction = -1
+        this.isHit = false
+        this.direction = direction
         this.checkHit = checkHit
         this.random = Math.random()
     }
 
-    changeDirection() {
-        this.direction = this.direction * -1
+    changeDirection(direction) {
+        this.direction = direction || this.direction * -1
     }
 
     fire(speed) {
+        this.isHit = false
         this.speed = speed || LASER_SPEED
+        this.unit.visible = true
+    }
+
+    hit() {
+        this.isHit = true
+        this.unit.visible = false
     }
 
     onPositionChange() {
@@ -43,8 +52,10 @@ class LaserBullet extends GameObject {
     }
 
     tick() {
-        if (this.speed === 0) return
+        if (this.speed === 0 || this.isHit) return
+
         typeof this.checkHit === 'function' && this.checkHit(this)
+
         this.position(null, this.unit.y + this.speed * this.direction)
     }
 }

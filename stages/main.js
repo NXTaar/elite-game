@@ -19,7 +19,9 @@ class MainStage extends Stage {
 
         this.enemyShip = new Enemy({
             position: [400, 50],
-            borders: backgroundTexture
+            borders: backgroundTexture,
+            attackCondition: this.needShootToPlayer,
+            attackFn: this.attackPlayer
         })
 
         this.playerShip.drawAnchorPoint()
@@ -36,31 +38,85 @@ class MainStage extends Stage {
         app.start()
     }
 
-    checkEnemyHit = ({ random, collisionBodies, unit: { x: bulletX, y: bulletY } }) => {
-        let bullet = collisionBodies[0]
-        let enemy = this.enemyShip.collisionBodies[0]
+    checkEnemyHit = bullet => {
+        let { random, collisionBodies, unit: { x: bulletX, y: bulletY } } = bullet
+        let bulletHitbox = collisionBodies[0]
+        let enemyHitboxes = this.enemyShip.collisionBodies
+
         let { x: enemyX, y: enemyY } = this.enemyShip.unit
 
-        bullet.updatePosition(bulletX, bulletY)
-        enemy.updatePosition(enemyX, enemyY)
+        bulletHitbox.updatePosition(bulletX, bulletY)
 
-        let isHit = bullet.collision(enemy)
+        let hits = enemyHitboxes.reduce((res, hitbox) => {
+            let { zone, side } = hitbox
 
-        isHit && console.log('Hit!!', random)
+            hitbox.updatePosition(enemyX, enemyY)
+
+            let isHit = bulletHitbox.collision(hitbox)
+
+            isHit && res.push({
+                zone,
+                ...side && { side },
+                bulletId: random
+            })
+
+            return res
+        }, [])
+
+        if (hits.length === 0) return
+
+        console.log(hits[0])
+
+        bullet.hit()
     }
 
-    isPlayerOnFireLine = () => {
+    needShootToPlayer = () => {
+        let { unit: { x: playerX, width } } = this.playerShip
+        let { x: enemyX } = this.enemyShip.unit
+        let anchorOffset = width * 0.5
+        let leftBound = playerX - anchorOffset
+        let rightBound = playerX + anchorOffset
 
+        let canShoot = !this.enemyCooldown && leftBound <= enemyX && enemyX <= rightBound
+
+        if (canShoot) {
+            this.enemyCooldown = true
+            setTimeout(() => {
+                this.enemyCooldown = false
+            }, 700)
+        }
+
+        return canShoot
     }
 
-    handlePlayerShooting = () => this.playerShip.firePoints.forEach(this.fireLaser)
+    attackPlayer = ({ out }) => {
+        this.handleEnemyShooting()
+        out()
+    }
 
-    fireLaser = ({ x: firePointX, y: firePointY }) => {
-        let { x, y } = this.playerShip.unit
+    handlePlayerShooting = () => this.playerShip.firePoints.forEach(firepoint => this.fireLaser({
+        firepoint,
+        shooter: this.playerShip.unit,
+        checkHit: this.checkEnemyHit
+    }))
 
-        let shot = this.shotsRecycle.length > 0 ? this.shotsRecycle.shift() : new LaserBullet({ checkHit: this.checkEnemyHit })
+    handleEnemyShooting = () => this.enemyShip.firePoints.forEach(firepoint => this.fireLaser({
+        firepoint,
+        shooter: this.enemyShip.unit,
+        direction: 1
+    }))
 
-        shot.position(x + firePointX, y + firePointY)
+    fireLaser = ({
+        firepoint: { x: firePointX, y: firePointY },
+        shooter: { x: shooterX, y: shooterY },
+        direction = -1,
+        checkHit = () => false
+    }) => {
+        let shot = this.shotsRecycle.length > 0 ? this.shotsRecycle.shift() : new LaserBullet()
+
+        shot.changeDirection(direction)
+        shot.checkHit = checkHit
+        shot.position(shooterX + firePointX, shooterY + firePointY)
 
         !shot.isOnStage() && this.scene.addChild(shot.unit)
 
@@ -71,7 +127,7 @@ class MainStage extends Stage {
 
     tick() {
         let { visibleShots, shotsRecycle } = this.visibleShots.reduce((res, shot) => {
-            if (shot.inSight) res.visibleShots.push(shot)
+            if (shot.inSight && !shot.isHit) res.visibleShots.push(shot)
             else {
                 res.shotsRecycle.push(shot)
                 shot.stop()

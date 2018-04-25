@@ -30,11 +30,13 @@ const parseTypes = {
 
     'firepoint': ({ x, y, name }) => ({ x, y, name }),
 
-    'hitbox': ({ polygon, x, y }) => ({
+    'hitbox': ({ polygon, x, y, properties: { zone, side } = {} }) => ({
         area: polygon.map(({ x: pX, y: pY }) => ({
             x: x + pX,
             y: y + pY
-        }))
+        })),
+        ...zone && { zone },
+        ...side && { side }
     })
 }
 
