@@ -17,25 +17,12 @@ class CollisionBody extends Polygon {
     }
 }
 
-const prepareHitbox = ({
-    area,
-    width,
-    height,
-    anchor = [0, 0]
-}) => {
-    let [zeroX, zeroY] = [width * anchor[0], height * anchor[1]]
+export const prepareCollisions = ({ hitbox, zeroPoint, x, y }) => hitbox ?
+    hitbox.map(({ area, ...props }) => {
+        let [zeroX, zeroY] = zeroPoint
 
-    return area.map(({ x, y }) => new Vector(x - zeroX, y - zeroY))
-}
+        let preparedArea = area.map(({ x, y }) => new Vector(x - zeroX, y - zeroY))
 
-export const prepareCollisions = ({ hitbox, anchor }, { width, height, x, y }) => {
-    let collisionBodies = hitbox ?
-        hitbox.map(({ area, ...props }) => {
-            let preparedArea = prepareHitbox({ area, width, height, anchor })
-
-            return new CollisionBody(preparedArea, { x, y, ...props })
-        }) :
-        []
-
-    return { collisionBodies }
-}
+        return new CollisionBody(preparedArea, { x, y, ...props })
+    }) :
+    []

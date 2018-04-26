@@ -1,5 +1,6 @@
 import { awaitAssets } from '@modules/assets'
 import app from '@modules/app'
+import buildComponentSet from '@modules/set'
 
 class Stage {
     constructor() {
@@ -7,6 +8,26 @@ class Stage {
         this.scene = new PIXI.Container()
 
         typeof this.tick === 'function' && app.ticker.add(this.tick.bind(this))
+    }
+
+    addObject(setup) {
+        let object = {
+            addToStage: true,
+            ...buildComponentSet(setup)
+        }
+
+        object.addToStage && object.$ && this.scene.addChild(object.$)
+
+        delete object.addToStage
+
+        if (object.interaction) {
+            this.scene.interactive = true
+            this.scene.on(...object.interaction)
+        }
+
+        delete object.interaction
+
+        return object
     }
 
     destroy() {

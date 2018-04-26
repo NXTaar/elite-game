@@ -15,6 +15,8 @@ export const isEqual = (a, b) => {
     }
 }
 
+export const noop = () => {}
+
 export const kebabToClassCamelcase = str => str.match(/([^\/]+)(?=\.\w+$)/)[0]
     .toLowerCase()
     .replace(/(\b|-)\w/g, m => m.toUpperCase().replace(/-/, ''))

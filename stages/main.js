@@ -1,78 +1,197 @@
 import Stage from '@modules/stage'
-import { PlayerShip, LaserBullet, Enemy } from '../objects'
+import { Firepoint, GameObject, Hitbox, Movement, StateMachine, Ticker } from '@components'
+import { linearMoveAsync } from '@modules/movements'
+import { assetsConfig } from '@modules/assets'
+import Projectile from '../components/projectile'
 
 class MainStage extends Stage {
     constructor(props) {
         super(props)
-        this.visibleShots = []
+        this.visibleShots = {}
         this.shotsRecycle = []
     }
 
-    onAssetsReady(app, { Background }) {
-        this.scene.interactive = true
+    onAssetsReady(app, { Background, ShipCobra, ShipSidewinder, LaserBullet }) {
+        this.addObject([
+            { id: 'background' },
+            {
+                component: GameObject,
+                texture: Background
+            }
+        ])
 
-        let backgroundTexture = new PIXI.Sprite(Background)
+        this.laserShotTexture = LaserBullet
 
-        this.playerShip = new PlayerShip({
-            position: [400, 520]
-        })
+        this.playerShip = this.addObject([
+            {
+                id: 'player',
+                ship: 'cobra_mk3',
+                interaction: ['pointerdown', this.handlePlayerShooting],
+                config: assetsConfig.ShipCobra
+            },
+            {
+                component: GameObject,
+                texture: ShipCobra,
+                position: [400, 520]
+            },
+            {
+                component: Movement,
+                movement: 'followMouseX',
+                gapFromBorder: assetsConfig.ShipCobra.gap,
+                speed: 8,
+                width: this.scene.width
+            },
+            {
+                component: Firepoint
+            },
+            {
+                component: Hitbox
+            },
+            {
+                component: Ticker
+            }
+        ])
 
-        this.enemyShip = new Enemy({
-            position: [400, 50],
-            borders: backgroundTexture,
-            attackCondition: this.needShootToPlayer,
-            attackFn: this.attackPlayer
-        })
-
-        this.playerShip.drawAnchorPoint()
-        this.playerShip.startMovement('followMouseX', backgroundTexture)
-
-        this.scene.on('pointerdown', this.handlePlayerShooting)
-
-        this.scene.addChild(backgroundTexture)
-        this.scene.addChild(this.playerShip.unit)
-        this.scene.addChild(this.enemyShip.unit)
+        this.enemyShip = this.addObject([
+            {
+                id: 'enemy',
+                ship: 'sidewinder',
+                borderSetups: {
+                    left: {
+                        x: 0 + assetsConfig.ShipSidewinder.gap + ShipSidewinder.width / 2,
+                        nextState: 'movingToRightBorder'
+                    },
+                    right: {
+                        x: this.scene.width - assetsConfig.ShipSidewinder.gap - ShipSidewinder.width / 2,
+                        nextState: 'movingToLeftBorder'
+                    }
+                },
+                config: assetsConfig.ShipSidewinder
+            },
+            {
+                component: GameObject,
+                texture: ShipSidewinder,
+                position: [400, ShipSidewinder.height * -1],
+                rotation: Math.PI
+            },
+            {
+                component: StateMachine,
+                states: [
+                    {
+                        name: 'appearingOnTop',
+                        initial: true,
+                        action: this.enemyAppearOnTop
+                    },
+                    {
+                        name: 'movingToLeftBorder',
+                        action: this.enemyMoveToBorder('left')
+                    },
+                    {
+                        name: 'movingToRightBorder',
+                        action: this.enemyMoveToBorder('right')
+                    },
+                    {
+                        name: 'attackingPlayer',
+                        action: this.attackPlayer,
+                        enterCondition: this.needShootToPlayer,
+                        cantEnterAfter: ['appearingOnTop']
+                    }
+                ]
+            },
+            {
+                component: Firepoint
+            },
+            {
+                component: Hitbox
+            },
+            {
+                component: Ticker
+            }
+        ])
 
         app.stage.addChild(this.scene)
 
         app.start()
     }
 
-    checkEnemyHit = bullet => {
-        let { random, collisionBodies, unit: { x: bulletX, y: bulletY } } = bullet
-        let bulletHitbox = collisionBodies[0]
-        let enemyHitboxes = this.enemyShip.collisionBodies
+    enemyAppearOnTop = async ({ out, enter }) => {
+        await linearMoveAsync(this.enemyShip.$, { destination: [400, 50], speed: 2 })
 
-        let { x: enemyX, y: enemyY } = this.enemyShip.unit
-
-        bulletHitbox.updatePosition(bulletX, bulletY)
-
-        let hits = enemyHitboxes.reduce((res, hitbox) => {
-            let { zone, side } = hitbox
-
-            hitbox.updatePosition(enemyX, enemyY)
-
-            let isHit = bulletHitbox.collision(hitbox)
-
-            isHit && res.push({
-                zone,
-                ...side && { side },
-                bulletId: random
-            })
-
-            return res
-        }, [])
-
-        if (hits.length === 0) return
-
-        console.log(hits[0])
-
-        bullet.hit()
+        out()
+        enter(Math.random() >= 0.5 ? 'movingToLeftBorder' : 'movingToRightBorder')
     }
 
+    enemyMoveToBorder = direction => async ({ out, enter }) => {
+        let { x, nextState } = this.enemyShip.borderSetups[direction]
+        let { y } = this.enemyShip.$
+
+        await linearMoveAsync(this.enemyShip.$, { destination: [x, y], speed: 4 })
+
+        out()
+        enter(nextState)
+    }
+
+    recycleShot = bulletId => {
+        let shotToRecycle = this.visibleShots[bulletId]
+
+        delete this.visibleShots[bulletId]
+
+        this.shotsRecycle.push(shotToRecycle)
+    }
+
+    getLaserObject = () => this.shotsRecycle.length > 0 ?
+        this.shotsRecycle.shift() :
+        this.addObject([
+            {
+                projectile: 'laser',
+                id: Math.random(),
+                config: assetsConfig.LaserBullet
+            },
+            {
+                component: GameObject,
+                texture: this.laserShotTexture
+            },
+            {
+                component: Hitbox
+            },
+            {
+                component: Projectile,
+                height: this.scene.height,
+                onOutOfSight: this.handleLaserShotOutOfSight,
+                onHit: this.handleLaserHit,
+                speed: 10
+            },
+            {
+                component: Ticker
+            }
+        ])
+
+    handleLaserShotOutOfSight = shot => this.recycleShot(shot.id)
+
+    handleLaserHit = (hit, { $, id }) => {
+        $.visible = false
+        this.recycleShot(id)
+        console.log(hit)
+    }
+
+    fireLaser = (shooter, target) => shooter.firepoints.forEach(firepoint => {
+        let shot = this.getLaserObject()
+
+        shot.$.visible = true
+        shot.target = target
+        shot.direction = shooter.id === 'player' ? -1 : 1
+        shot.position(shooter.$.x + firepoint.x, shooter.$.y + firepoint.y)
+
+        this.visibleShots[shot.id] = shot
+    })
+
+    handlePlayerShooting = () => this.fireLaser(this.playerShip, this.enemyShip)
+
+    handleEnemyShooting = () => this.fireLaser(this.enemyShip, this.playerShip)
+
     needShootToPlayer = () => {
-        let { unit: { x: playerX, width } } = this.playerShip
-        let { x: enemyX } = this.enemyShip.unit
+        let { $: { x: playerX, width } } = this.playerShip
+        let { x: enemyX } = this.enemyShip.$
         let anchorOffset = width * 0.5
         let leftBound = playerX - anchorOffset
         let rightBound = playerX + anchorOffset
@@ -94,55 +213,10 @@ class MainStage extends Stage {
         out()
     }
 
-    handlePlayerShooting = () => this.playerShip.firePoints.forEach(firepoint => this.fireLaser({
-        firepoint,
-        shooter: this.playerShip.unit,
-        checkHit: this.checkEnemyHit
-    }))
-
-    handleEnemyShooting = () => this.enemyShip.firePoints.forEach(firepoint => this.fireLaser({
-        firepoint,
-        shooter: this.enemyShip.unit,
-        direction: 1
-    }))
-
-    fireLaser = ({
-        firepoint: { x: firePointX, y: firePointY },
-        shooter: { x: shooterX, y: shooterY },
-        direction = -1,
-        checkHit = () => false
-    }) => {
-        let shot = this.shotsRecycle.length > 0 ? this.shotsRecycle.shift() : new LaserBullet()
-
-        shot.changeDirection(direction)
-        shot.checkHit = checkHit
-        shot.position(shooterX + firePointX, shooterY + firePointY)
-
-        !shot.isOnStage() && this.scene.addChild(shot.unit)
-
-        shot.fire()
-
-        this.visibleShots.push(shot)
-    }
-
     tick() {
-        let { visibleShots, shotsRecycle } = this.visibleShots.reduce((res, shot) => {
-            if (shot.inSight && !shot.isHit) res.visibleShots.push(shot)
-            else {
-                res.shotsRecycle.push(shot)
-                shot.stop()
-            }
-
-            return res
-        }, { visibleShots: [], shotsRecycle: [] })
-
-        Object.assign(this, {
-            visibleShots,
-            shotsRecycle: [
-                ...this.shotsRecycle,
-                ...shotsRecycle
-            ]
-        })
+        this.enemyShip.tick()
+        this.playerShip.tick()
+        Object.keys(this.visibleShots).forEach(shotId => this.visibleShots[shotId].tick())
     }
 }
 

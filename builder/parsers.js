@@ -1,13 +1,15 @@
 const { kebabToClassCamelcase } = require('./utils')
 
 const parseTypes = {
-    'object': ({ image, objectgroup: { objects } }, rawCustomProperties = {}) => {
+    'object': ({ image, imageheight: height, imagewidth: width, objectgroup: { objects } }, rawCustomProperties = {}) => {
         let objectName = kebabToClassCamelcase(image)
 
         let parsedCustomProperties = { ...Object.keys(rawCustomProperties).reduce((res, propName) => ({
             ...res,
-            ...parseTypes[propName] && { [propName]: parseTypes[propName](rawCustomProperties[propName]) }
-        }), { name: objectName }) }
+            ...parseTypes[propName] ?
+                { [propName]: parseTypes[propName](rawCustomProperties[propName]) } :
+                { [propName]: rawCustomProperties[propName] }
+        }), { name: objectName, height, width }) }
 
         let parsed = objects.reduce((res, setup) => {
             let { type } = setup

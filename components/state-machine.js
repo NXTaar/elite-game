@@ -1,9 +1,10 @@
-export class StateMachine {
+class FSM {
     constructor(stateSetups = []) {
         this.statesStack = []
         let { states, initial, enterConditions } = stateSetups.reduce((res, state) => {
             state.name && (res.states[state.name] = {
                 ...state,
+                cantEnterAfter: state.cantEnterAfter || [],
                 outFn: this.outState(state.name)
             })
 
@@ -27,9 +28,14 @@ export class StateMachine {
     }
 
     enterState = name => {
+        let currentState = this.statesStack[0]
         let stateToEnter = this.states[name]
 
-        stateToEnter && this.statesStack.unshift(stateToEnter)
+        if (!stateToEnter) return
+
+        let canEnter = !(stateToEnter.cantEnterAfter.length > 0 && stateToEnter.cantEnterAfter.includes(currentState.name))
+
+        stateToEnter && canEnter && this.statesStack.unshift(stateToEnter)
     }
 
     outState = name => () => {
@@ -51,3 +57,21 @@ export class StateMachine {
         })
     }
 }
+
+
+const StateMachine = ({ states }, build) => {
+    let machine = new FSM(states)
+
+    build.loopActions = build.loopActions || []
+
+    build.loopActions.push({
+        id: 'stateMachine',
+        action: () => machine.render()
+    })
+
+    return build
+}
+
+StateMachine.id = 'StateMachine'
+
+export default StateMachine
