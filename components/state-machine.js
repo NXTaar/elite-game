@@ -59,7 +59,7 @@ class FSM {
 }
 
 
-const StateMachine = ({ states }, build) => {
+const StateMachine = (states, build) => {
     let machine = new FSM(states)
 
     build.loopActions = build.loopActions || []

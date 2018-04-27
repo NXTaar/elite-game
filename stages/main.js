@@ -11,111 +11,87 @@ class MainStage extends Stage {
     }
 
     onAssetsReady(app, { Background, ShipCobra, ShipSidewinder, Explosion }) {
-        this.addObject([
-            { id: 'background' },
-            {
-                component: GameObject,
+        this.addObject({
+            id: 'background',
+            sprite: {
                 texture: Background
             }
-        ])
+        })
 
-        this.playerShip = this.addObject([
-            {
-                id: 'player',
-                ship: 'cobra_mk3',
-                interaction: ['pointerdown', this.handlePlayerShooting],
-                config: assetsConfig.ShipCobra
-            },
-            {
-                component: GameObject,
+        this.playerShip = this.addObject({
+            id: 'player',
+            ship: 'cobra_mk3',
+            interaction: ['pointerdown', this.handlePlayerShooting],
+            config: assetsConfig.ShipCobra,
+            sprite: {
                 texture: ShipCobra,
                 position: [400, 520]
             },
-            {
-                component: Movement,
-                movement: 'followMouseX',
+            movement: {
+                type: 'followMouseX',
                 gapFromBorder: assetsConfig.ShipCobra.gap,
                 speed: 8,
                 width: this.scene.width
             },
-            {
-                component: Firepoint
-            },
-            {
-                component: Fader
-            },
-            {
-                component: Hitbox
-            },
-            {
-                component: Ticker
-            }
-        ])
+            common: [
+                'Firepoint',
+                'Fader',
+                'Hitbox',
+                'Ticker'
+            ]
+        })
 
-        this.enemyShip = this.addObject([
-            {
-                id: 'enemy',
-                ship: 'sidewinder',
-                borderSetups: {
-                    left: {
-                        x: 0 + assetsConfig.ShipSidewinder.gap + ShipSidewinder.width / 2,
-                        nextState: 'movingToRightBorder'
-                    },
-                    right: {
-                        x: this.scene.width - assetsConfig.ShipSidewinder.gap - ShipSidewinder.width / 2,
-                        nextState: 'movingToLeftBorder'
-                    }
+        this.enemyShip = this.addObject({
+            id: 'enemy',
+            ship: 'sidewinder',
+            borderSetups: {
+                left: {
+                    x: 0 + assetsConfig.ShipSidewinder.gap + ShipSidewinder.width / 2,
+                    nextState: 'movingToRightBorder'
                 },
-                config: assetsConfig.ShipSidewinder
+                right: {
+                    x: this.scene.width - assetsConfig.ShipSidewinder.gap - ShipSidewinder.width / 2,
+                    nextState: 'movingToLeftBorder'
+                }
             },
-            {
-                component: GameObject,
+            config: assetsConfig.ShipSidewinder,
+            sprite: {
                 texture: ShipSidewinder,
                 position: [400, ShipSidewinder.height * -1],
                 rotation: Math.PI
             },
-            {
-                component: StateMachine,
-                states: [
-                    {
-                        name: 'appearingOnTop',
-                        initial: true,
-                        action: this.enemyAppearOnTop
-                    },
-                    {
-                        name: 'movingToLeftBorder',
-                        action: this.enemyMoveToBorder('left')
-                    },
-                    {
-                        name: 'movingToRightBorder',
-                        action: this.enemyMoveToBorder('right')
-                    },
-                    {
-                        name: 'attackingPlayer',
-                        action: this.attackPlayer,
-                        enterCondition: this.isPlayerOnFireLine,
-                        cantEnterAfter: ['appearingOnTop']
-                    }
-                ]
-            },
-            {
-                component: Firepoint
-            },
-            {
-                component: Hitbox
-            },
-            {
-                component: Ticker
-            }
-        ])
+            states: [
+                {
+                    name: 'appearingOnTop',
+                    initial: true,
+                    action: this.enemyAppearOnTop
+                },
+                {
+                    name: 'movingToLeftBorder',
+                    action: this.enemyMoveToBorder('left')
+                },
+                {
+                    name: 'movingToRightBorder',
+                    action: this.enemyMoveToBorder('right')
+                },
+                {
+                    name: 'attackingPlayer',
+                    action: this.attackPlayer,
+                    enterCondition: this.isPlayerOnFireLine,
+                    cantEnterAfter: ['appearingOnTop']
+                }
+            ],
+            common: [
+                'Firepoint',
+                'Hitbox',
+                'Ticker'
+            ]
+        })
 
-        this.explosion = this.addObject([
-            {
-                id: 'explosion',
-                config: assetsConfig.Explosion
-            },
-            {
-                component: GameObject,
+        this.explosion = this.addObject({
+            id: 'explosion',
+            config: assetsConfig.Explosion,
+            sprite: {
                 texture: Explosion,
                 animation: {
                     animationSpeed: 0.2,
@@ -124,13 +100,11 @@ class MainStage extends Stage {
                 },
                 position: [400, 250]
             },
-            {
-                component: Fader
-            },
-            {
-                component: Ticker
-            }
-        ])
+            common: [
+                'Fader',
+                'Ticker'
+            ]
+        })
 
         this.explosion.play()
 
@@ -170,30 +144,23 @@ class MainStage extends Stage {
 
     getLaserObject = () => this.shotsRecycle.length > 0 ?
         this.shotsRecycle.shift() :
-        this.addObject([
-            {
-                projectile: 'laser',
-                id: Math.random(),
-                config: assetsConfig.LaserBullet
-            },
-            {
-                component: GameObject,
+        this.addObject({
+            id: Math.random(),
+            config: assetsConfig.LaserBullet,
+            sprite: {
                 texture: this.assets.LaserBullet
             },
-            {
-                component: Hitbox
-            },
-            {
-                component: Projectile,
+            projectile: {
                 height: this.scene.height,
                 onOutOfSight: this.handleLaserShotOutOfSight,
                 onHit: this.handleLaserHit,
                 speed: 10
             },
-            {
-                component: Ticker
-            }
-        ])
+            common: [
+                'Hitbox',
+                'Ticker'
+            ]
+        })
 
     handleLaserShotOutOfSight = shot => this.recycleShot(shot.id)
 
@@ -244,10 +211,10 @@ class MainStage extends Stage {
 
     tick(delta) {
         // console.log(deltaToMs(delta))
-        // this.enemyShip.tick()
+        this.enemyShip.tick()
         this.playerShip.tick(delta)
         this.explosion.tick(delta)
-        // Object.keys(this.visibleShots).forEach(shotId => this.visibleShots[shotId].tick())
+        Object.keys(this.visibleShots).forEach(shotId => this.visibleShots[shotId].tick())
     }
 }
 

@@ -38,10 +38,10 @@ const movements = {
     followMouseX
 }
 
-const Movement = ({ movement, ...movementParams }, build) => {
+const Movement = ({ type, ...movementParams }, build) => {
     let preparedMovement = null
 
-    movements[movement] && (preparedMovement = movements[movement]({
+    movements[type] && (preparedMovement = movements[type]({
         ...movementParams,
         object: build.$
     }))
@@ -49,7 +49,7 @@ const Movement = ({ movement, ...movementParams }, build) => {
     build.loopActions = build.loopActions || []
 
     preparedMovement && build.loopActions.push({
-        id: movement,
+        id: type,
         ...preparedMovement
     })
 
