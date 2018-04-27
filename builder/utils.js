@@ -20,3 +20,16 @@ exports.debounce = (func, wait, immediate) => {
         if (callNow) func.apply(context, args)
     }
 }
+
+exports.parsePairIntArray = arr => arr.split(';').map(int => parseFloat(int))
+
+exports.parseCustomPropeties = ({
+    rawProps = {},
+    parseTypes = {},
+    initial = {}
+}) => ({ ...Object.keys(rawProps).reduce((res, propName) => ({
+    ...res,
+    ...parseTypes[propName] ?
+        { [propName]: parseTypes[propName](rawProps[propName]) } :
+        { [propName]: rawProps[propName] }
+}), initial) })

@@ -1,8 +1,7 @@
 import Stage from '@modules/stage'
-import { Firepoint, GameObject, Hitbox, Movement, StateMachine, Ticker } from '@components'
+import { Fader, Firepoint, GameObject, Hitbox, Movement, Projectile, StateMachine, Ticker } from '@components'
 import { linearMoveAsync } from '@modules/movements'
 import { assetsConfig } from '@modules/assets'
-import Projectile from '../components/projectile'
 
 class MainStage extends Stage {
     constructor(props) {
@@ -11,7 +10,7 @@ class MainStage extends Stage {
         this.shotsRecycle = []
     }
 
-    onAssetsReady(app, { Background, ShipCobra, ShipSidewinder, LaserBullet }) {
+    onAssetsReady(app, { Background, ShipCobra, ShipSidewinder, Explosion }) {
         this.addObject([
             { id: 'background' },
             {
@@ -19,8 +18,6 @@ class MainStage extends Stage {
                 texture: Background
             }
         ])
-
-        this.laserShotTexture = LaserBullet
 
         this.playerShip = this.addObject([
             {
@@ -43,6 +40,9 @@ class MainStage extends Stage {
             },
             {
                 component: Firepoint
+            },
+            {
+                component: Fader
             },
             {
                 component: Hitbox
@@ -93,7 +93,7 @@ class MainStage extends Stage {
                     {
                         name: 'attackingPlayer',
                         action: this.attackPlayer,
-                        enterCondition: this.needShootToPlayer,
+                        enterCondition: this.isPlayerOnFireLine,
                         cantEnterAfter: ['appearingOnTop']
                     }
                 ]
@@ -109,9 +109,38 @@ class MainStage extends Stage {
             }
         ])
 
+        this.explosion = this.addObject([
+            {
+                id: 'explosion',
+                config: assetsConfig.Explosion
+            },
+            {
+                component: GameObject,
+                texture: Explosion,
+                animation: {
+                    animationSpeed: 0.2,
+                    onComplete: this.fadeExplosion,
+                    loop: false
+                },
+                position: [400, 250]
+            },
+            {
+                component: Fader
+            },
+            {
+                component: Ticker
+            }
+        ])
+
+        this.explosion.play()
+
         app.stage.addChild(this.scene)
 
         app.start()
+    }
+
+    fadeExplosion = async () => {
+        await this.explosion.fade({ to: 0, duration: 4000 })
     }
 
     enemyAppearOnTop = async ({ out, enter }) => {
@@ -149,7 +178,7 @@ class MainStage extends Stage {
             },
             {
                 component: GameObject,
-                texture: this.laserShotTexture
+                texture: this.assets.LaserBullet
             },
             {
                 component: Hitbox
@@ -189,7 +218,7 @@ class MainStage extends Stage {
 
     handleEnemyShooting = () => this.fireLaser(this.enemyShip, this.playerShip)
 
-    needShootToPlayer = () => {
+    isPlayerOnFireLine = () => {
         let { $: { x: playerX, width } } = this.playerShip
         let { x: enemyX } = this.enemyShip.$
         let anchorOffset = width * 0.5
@@ -213,10 +242,12 @@ class MainStage extends Stage {
         out()
     }
 
-    tick() {
-        this.enemyShip.tick()
-        this.playerShip.tick()
-        Object.keys(this.visibleShots).forEach(shotId => this.visibleShots[shotId].tick())
+    tick(delta) {
+        // console.log(deltaToMs(delta))
+        // this.enemyShip.tick()
+        this.playerShip.tick(delta)
+        this.explosion.tick(delta)
+        // Object.keys(this.visibleShots).forEach(shotId => this.visibleShots[shotId].tick())
     }
 }
 

@@ -1,15 +1,14 @@
-const { kebabToClassCamelcase } = require('./utils')
+const { kebabToClassCamelcase, parseCustomPropeties, parsePairIntArray } = require('./utils')
 
 const parseTypes = {
-    'object': ({ image, imageheight: height, imagewidth: width, objectgroup: { objects } }, rawCustomProperties = {}) => {
+    'object': ({ image, imageheight: height, imagewidth: width, objectgroup: { objects } }, rawProps = {}) => {
         let objectName = kebabToClassCamelcase(image)
 
-        let parsedCustomProperties = { ...Object.keys(rawCustomProperties).reduce((res, propName) => ({
-            ...res,
-            ...parseTypes[propName] ?
-                { [propName]: parseTypes[propName](rawCustomProperties[propName]) } :
-                { [propName]: rawCustomProperties[propName] }
-        }), { name: objectName, height, width }) }
+        let parsedCustomProperties = parseCustomPropeties({
+            rawProps,
+            parseTypes,
+            initial: { name: objectName, height, width }
+        })
 
         let parsed = objects.reduce((res, setup) => {
             let { type } = setup
@@ -28,7 +27,38 @@ const parseTypes = {
         }
     },
 
-    'anchor': raw => raw.split(';').map(int => parseFloat(int)),
+    'animated-object': ({ image, imageheight: height, imagewidth: width }, rawProps) => {
+        let objectName = kebabToClassCamelcase(image)
+
+        let { frame, ...props } = parseCustomPropeties({
+            rawProps,
+            parseTypes
+        })
+
+        let [frameWidth, frameHeight] = frame
+        let framesAmount = width / frameWidth
+
+        let frames = new Array(framesAmount).fill(null).map((_, index) => ({
+            x: frameWidth * index,
+            y: 0,
+            width: frameWidth,
+            height: frameHeight,
+            name: `${objectName}_${index + 1}`
+        }))
+
+        return {
+            [objectName]: {
+                frames,
+                width: frameWidth,
+                height: frameHeight,
+                ...props
+            }
+        }
+    },
+
+    'frame': parsePairIntArray,
+
+    'anchor': parsePairIntArray,
 
     'firepoint': ({ x, y, name }) => ({ x, y, name }),
 

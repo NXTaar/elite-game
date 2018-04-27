@@ -2,6 +2,7 @@ const gameObject = ({
     texture,
     position,
     rotation,
+    animation = false,
     position: [pX = 0, pY = 0] = []
 }, {
     config: {
@@ -12,9 +13,11 @@ const gameObject = ({
     } = {}
 }) => {
     let $ = {}
-    let isValidTexture = texture && texture.constructor.name === 'Texture'
+    let isValidTexture = Array.isArray(texture) ? texture.every(checkTextureIsValid) : checkTextureIsValid(texture)
 
-    isValidTexture && ($ = new PIXI.Sprite(texture))
+    isValidTexture && ($ = animation ? new PIXI.extras.AnimatedSprite(texture) : new PIXI.Sprite(texture))
+
+    animation && Object.assign($, animation)
 
     anchor && $ && $.anchor.set(aX, aY)
 
@@ -23,9 +26,15 @@ const gameObject = ({
     rotation && $ && ($.rotation = rotation)
 
     return {
-        zeroPoint: [$.anchor.x * width, $.anchor.y * height],
+        ...anchor && { zeroPoint: [$.anchor.x * width, $.anchor.y * height] },
+
+        ...animation && {
+            play() {
+                this.$.play()
+            }
+        },
         isOnStage() {
-            return !!$.parent
+            return !!this.$.parent
         },
         position(x, y) {
             x = x || $.x
@@ -38,5 +47,7 @@ const gameObject = ({
 }
 
 gameObject.id = 'GameObject'
+
+const checkTextureIsValid = texture => texture && texture.constructor.name === 'Texture'
 
 export default gameObject

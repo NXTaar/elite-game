@@ -4,7 +4,10 @@ import buildComponentSet from '@modules/set'
 
 class Stage {
     constructor() {
-        awaitAssets.then(assets => typeof this.onAssetsReady === 'function' && this.onAssetsReady(app, assets))
+        awaitAssets.then(assets => {
+            typeof this.onAssetsReady === 'function' && this.onAssetsReady(app, assets)
+            this.assets = assets
+        })
         this.scene = new PIXI.Container()
 
         typeof this.tick === 'function' && app.ticker.add(this.tick.bind(this))

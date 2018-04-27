@@ -13,6 +13,6 @@ module.exports = class AssetsWather {
         let processed = this.processor(JSON.parse(rawFile))
 
         fs.writeFileSync(this.output, JSON.stringify(processed, null, 2), 'utf8')
-        console.log(`processed JSON written - ${path}`)
+        console.log(`processed JSON written - ${this.output}`)
     }
 }

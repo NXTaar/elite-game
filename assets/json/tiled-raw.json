@@ -8,7 +8,7 @@
  "margin":0,
  "name":"ships",
  "spacing":0,
- "tilecount":3,
+ "tilecount":4,
  "tileheight":128,
  "tileproperties":
     {
@@ -25,6 +25,11 @@
      "2":
         {
          "anchor":"0.5;0.5"
+        },
+     "4":
+        {
+         "anchor":"0.5;0.5",
+         "frame":"96;96"
         }
     },
  "tilepropertytypes":
@@ -42,6 +47,11 @@
      "2":
         {
          "anchor":"string"
+        },
+     "4":
+        {
+         "anchor":"string",
+         "frame":"string"
         }
     },
  "tiles":
@@ -467,8 +477,15 @@
              "y":0
             },
          "type":"object"
+        },
+     "4":
+        {
+         "image":"..\/images\/explosion.png",
+         "imageheight":96,
+         "imagewidth":1152,
+         "type":"animated-object"
         }
     },
- "tilewidth":204,
+ "tilewidth":1152,
  "type":"tileset"
 }

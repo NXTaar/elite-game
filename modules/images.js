@@ -1,7 +1,7 @@
 let imagesFolder = require.context('../assets', true, /^((?!favicon).)*\.png$/)
 
 let images = imagesFolder.keys().reduce((res, path) => {
-    let imageName = path.match(/([^\/]+)(?=\.\w+$)/)[0]
+    let imageName = path.match(/([^/]+)(?=\.\w+$)/)[0]
         .toLowerCase()
         .replace(/(\b|-)\w/g, m => m.toUpperCase().replace(/-/, ''))
 

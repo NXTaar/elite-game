@@ -7,12 +7,21 @@ const mapAssets = resolve => (loader, resources) => {
     let prerenderedAssets = {
         anchorPoint: anchorPointTexture
     }
-    let loadedAssets = Object.keys(resources).reduce((res, resourceName) => ({
-        ...res,
-        ...imagesByFilename[resourceName] && {
-            [imagesByFilename[resourceName]]: PIXI.loader.resources[resourceName].texture
+    let loadedAssets = Object.keys(resources).reduce((res, resourceName) => {
+        let assetName = imagesByFilename[resourceName]
+        let isAnimated = assetsSettingsJSON[assetName] && assetsSettingsJSON[assetName].frames
+
+        if (!assetName) return res
+
+        let texture = PIXI.loader.resources[resourceName].texture
+
+        return {
+            ...res,
+            ...!isAnimated && { [assetName]: texture },
+            ...isAnimated && { [assetName]: assetsSettingsJSON[assetName].frames
+                .map(({ x, y, width, height }) => new PIXI.Texture(texture, new PIXI.Rectangle(x, y, width, height))) }
         }
-    }), prerenderedAssets)
+    }, prerenderedAssets)
 
     exports.assetsSync = loadedAssets
     resolve(loadedAssets)
