@@ -21,7 +21,20 @@ exports.debounce = (func, wait, immediate) => {
     }
 }
 
-exports.parsePairIntArray = arr => arr.split(';').map(int => parseFloat(int))
+exports.isColor = raw => /^#(?:[0-9a-fA-F]{3}){1,2}$/g.test(raw)
+
+exports.parseParamsArray = arr => arr.split(';').map(param => {
+    let parsed = parseFloat(param)
+
+    exports.isColor(param) && (param = parseInt(`0x${param.slice(1)}`, 16))
+
+    return isNaN(parsed) ? param : parsed
+})
+
+exports.mapPolygon = ({ points, x, y }) => points.map(({ x: pX, y: pY }) => ({
+    x: x + pX,
+    y: y + pY
+}))
 
 exports.parseCustomPropeties = ({
     rawProps = {},

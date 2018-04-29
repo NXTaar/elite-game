@@ -1,4 +1,4 @@
 export const getCanvasSize = () => ({
     width: 800,
-    height: 600
+    height: 720
 })

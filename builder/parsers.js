@@ -1,4 +1,4 @@
-const { kebabToClassCamelcase, parseCustomPropeties, parsePairIntArray } = require('./utils')
+const { kebabToClassCamelcase, parseCustomPropeties, parseParamsArray, mapPolygon } = require('./utils')
 
 const parseTypes = {
     'object': ({ image, imageheight: height, imagewidth: width, objectgroup: { objects } }, rawProps = {}) => {
@@ -27,7 +27,13 @@ const parseTypes = {
         }
     },
 
-    'animated-object': ({ image, imageheight: height, imagewidth: width }, rawProps) => {
+    'hud': ({ x, y, polygon, properties: { color, glow } = {} }) => ({
+        area: mapPolygon({ points: polygon, x, y }),
+        ...color && { color },
+        ...glow && { glow: parseParamsArray(glow) }
+    }),
+
+    'animated-object': ({ image, imagewidth: width }, rawProps) => {
         let objectName = kebabToClassCamelcase(image)
 
         let { frame, ...props } = parseCustomPropeties({
@@ -56,17 +62,14 @@ const parseTypes = {
         }
     },
 
-    'frame': parsePairIntArray,
+    'frame': parseParamsArray,
 
-    'anchor': parsePairIntArray,
+    'anchor': parseParamsArray,
 
     'firepoint': ({ x, y, name }) => ({ x, y, name }),
 
     'hitbox': ({ polygon, x, y, properties: { zone, side } = {} }) => ({
-        area: polygon.map(({ x: pX, y: pY }) => ({
-            x: x + pX,
-            y: y + pY
-        })),
+        area: mapPolygon({ points: polygon, x, y }),
         ...zone && { zone },
         ...side && { side }
     })

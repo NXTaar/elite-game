@@ -1,12 +1,9 @@
 import { imageFiles, imagesByFilename } from '@modules/images'
-import { anchorPointTexture } from '@modules/anchor'
 import assetsSettingsJSON from '../assets/json/assets.json'
 
 
 const mapAssets = resolve => (loader, resources) => {
-    let prerenderedAssets = {
-        anchorPoint: anchorPointTexture
-    }
+    let prerenderedAssets = {}
     let loadedAssets = Object.keys(resources).reduce((res, resourceName) => {
         let assetName = imagesByFilename[resourceName]
         let isAnimated = assetsSettingsJSON[assetName] && assetsSettingsJSON[assetName].frames

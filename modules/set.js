@@ -48,10 +48,7 @@ const buildFromObject = setup => {
         let component = componentsRegister.setups[componentName] && components[componentName]
         let params = componentsRegister.setups[componentName]
 
-        return {
-            ...build,
-            ...component && { ...component(params, build) }
-        }
+        return Object.assign(build, component ? component(params, build) : {})
     }, componentsRegister.static)
 }
 

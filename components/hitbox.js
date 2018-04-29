@@ -1,6 +1,6 @@
 import { prepareCollisions } from '@modules/collision'
 
-const Hitbox = (params, { $: { x, y }, zeroPoint, config: { hitbox = [] } = {} }) => ({
+const Hitbox = (params, { x, y, zeroPoint, config: { hitbox = [] } = {} }) => ({
     hitboxes: prepareCollisions({ hitbox, zeroPoint, x, y })
 })
 
