@@ -1,4 +1,4 @@
-let imagesFolder = require.context('../assets', true, /^((?!favicon).)*\.png$/)
+let imagesFolder = require.context('../assets/images', true, /^((?!favicon).)*\.png$/)
 
 let images = imagesFolder.keys().reduce((res, path) => {
     let imageName = path.match(/([^/]+)(?=\.\w+$)/)[0]

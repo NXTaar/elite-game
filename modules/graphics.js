@@ -19,6 +19,38 @@ export class Point extends PIXI.Graphics {
     }
 }
 
+export class Segment extends PIXI.Graphics {
+    @observable color
+
+    @observable start = {
+        x: 0,
+        y: 0
+    }
+
+    @observable end = {
+        x: 0,
+        y: 0
+    }
+
+    constructor({ color = 'ffffff', start, end, size = 1 }) {
+        super()
+        this.start = start || this.start
+        this.end = end || this.end
+        Object.assign(this, { color, size })
+        autorun(this.draw)
+    }
+
+    draw = () => {
+        this.clear()
+
+        this.lineStyle(this.size, parseInt(`0x${this.color}`, 16))
+
+        this.moveTo(this.start.x, this.start.y)
+
+        this.lineTo(this.end.x, this.end.y)
+    }
+}
+
 export class Rectangle extends PIXI.Graphics {
     @observable _width
 

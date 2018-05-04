@@ -24,6 +24,8 @@ class View extends PIXI.Container {
 
         Object.keys(stageTree).length > 0 && this[private_compileStageTree](stageTree)
 
+        typeof this.ready === 'function' && this.ready()
+
         if (typeof this.tick !== 'function') return
 
         this[private_ticker] = this.tick.bind(this)

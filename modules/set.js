@@ -3,6 +3,7 @@ import * as components from '@components'
 const componentsPriorityOrder = [
     'GameObject',
     'StateMachine',
+    'Thrusters',
     'Hitbox',
     'Firepoint',
     'Projectile',
@@ -13,6 +14,7 @@ const componentsPriorityOrder = [
 
 const processors = {
     sprite: 'GameObject',
+    thrusters: 'Thrusters',
     movement: 'Movement',
     states: 'StateMachine',
     projectile: 'Projectile'
